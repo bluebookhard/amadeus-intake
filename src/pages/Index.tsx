@@ -1,6 +1,8 @@
 import { useState, useCallback } from "react";
 import UploadDropZone from "@/components/UploadDropZone";
 import CreativeBrief from "@/components/CreativeBrief";
+import AmbientBackground from "@/components/AmbientBackground";
+import { RotateCcw } from "lucide-react";
 import type { VideoClip, CreativeBriefData } from "@/types/amadeus";
 
 type Phase = "upload" | "brief" | "done";
@@ -20,17 +22,50 @@ const Index = () => {
     setPhase("done");
   }, [clips]);
 
+  const handleStartOver = useCallback(() => {
+    clips.forEach((c) => URL.revokeObjectURL(c.objectUrl));
+    setClips([]);
+    setPhase("upload");
+  }, [clips]);
+
+  const handleBackToUpload = useCallback(() => {
+    setPhase("upload");
+  }, []);
+
   return (
-    <div className="min-h-screen bg-background">
-      {phase === "upload" && <UploadDropZone onClipsReady={handleClipsReady} />}
-      {phase === "brief" && <CreativeBrief onComplete={handleBriefComplete} />}
-      {phase === "done" && (
-        <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-          <span className="text-5xl">✦</span>
-          <h1 className="text-2xl font-bold text-foreground">You're all set.</h1>
-          <p className="text-muted-foreground text-sm">Workspace coming in the next phase.</p>
-        </div>
+    <div className="min-h-screen bg-background relative">
+      <AmbientBackground />
+
+      {/* Start Over button - top right, always visible */}
+      {phase !== "upload" && (
+        <button
+          onClick={handleStartOver}
+          className="fixed top-6 right-8 z-[60] flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-card/80 backdrop-blur-sm text-sm text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          Start over
+        </button>
       )}
+
+      <div className="relative z-10">
+        {phase === "upload" && <UploadDropZone onClipsReady={handleClipsReady} />}
+        {phase === "brief" && (
+          <CreativeBrief onComplete={handleBriefComplete} onBack={handleBackToUpload} />
+        )}
+        {phase === "done" && (
+          <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+            <span className="text-5xl">✦</span>
+            <h1 className="text-2xl font-bold text-foreground">You're all set.</h1>
+            <p className="text-muted-foreground text-sm">Workspace coming in the next phase.</p>
+            <button
+              onClick={handleStartOver}
+              className="mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              ← Start over
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
