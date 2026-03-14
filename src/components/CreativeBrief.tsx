@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft } from "lucide-react";
 import type { CreativeBriefData } from "@/types/amadeus";
 
 const ENERGY_OPTIONS = [
@@ -24,13 +25,15 @@ const MUSIC_OPTIONS = [
   { label: "Ambient", emoji: "🌊", response: "Wide open spaces." },
 ];
 
+const TOTAL_STEPS = 3;
 type Step = 0 | 1 | 2;
 
 interface Props {
   onComplete: (brief: CreativeBriefData) => void;
+  onBack: () => void;
 }
 
-export default function CreativeBrief({ onComplete }: Props) {
+export default function CreativeBrief({ onComplete, onBack }: Props) {
   const [step, setStep] = useState<Step>(0);
   const [selectedEnergy, setSelectedEnergy] = useState<string | null>(null);
   const [selectedMusic, setSelectedMusic] = useState<string | null>(null);
@@ -85,6 +88,21 @@ export default function CreativeBrief({ onComplete }: Props) {
     submitBrief("");
   }, [submitBrief]);
 
+  const handleBack = useCallback(() => {
+    if (showResponse || transitioning) return;
+    if (step === 0) {
+      onBack();
+      return;
+    }
+    const prevStep = (step - 1) as Step;
+    // Clear the answer for the previous step
+    if (prevStep === 0) setSelectedEnergy(null);
+    if (prevStep === 1) setSelectedMusic(null);
+    // Remove last confirmed answer
+    setConfirmedAnswers((prev) => prev.slice(0, -1));
+    setStep(prevStep);
+  }, [step, onBack, showResponse, transitioning]);
+
   useEffect(() => {
     if (step === 2 && inputRef.current) {
       inputRef.current.focus();
@@ -96,6 +114,9 @@ export default function CreativeBrief({ onComplete }: Props) {
     1: { emoji: "🎵", text: "What kind of music fits the vibe?" },
     2: { emoji: "✨", text: "Any artists or tracks for inspiration?" },
   };
+
+  // Progress: 0 → 0%, after Q1 → 33%, after Q2 → 66%, done → 100%
+  const progressPercent = (step / TOTAL_STEPS) * 100;
 
   return (
     <motion.div
@@ -213,6 +234,31 @@ export default function CreativeBrief({ onComplete }: Props) {
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
+
+      {/* Bottom bar: back button + progress */}
+      <div className="absolute bottom-0 left-0 right-0">
+        {/* Back button */}
+        <div className="flex justify-start px-8 pb-6">
+          <button
+            onClick={handleBack}
+            disabled={showResponse || transitioning}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
+        </div>
+
+        {/* Progress bar */}
+        <div className="h-1 w-full bg-secondary">
+          <motion.div
+            className="h-full bg-primary"
+            initial={{ width: 0 }}
+            animate={{ width: `${progressPercent}%` }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          />
+        </div>
       </div>
     </motion.div>
   );
