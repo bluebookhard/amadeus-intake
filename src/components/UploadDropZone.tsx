@@ -183,17 +183,8 @@ function ClipCard({ clip, index, onRemove }: { clip: VideoClip; index: number; o
     <motion.div
       layout
       initial={{ y: -200, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      exit={{ scale: 0, opacity: 0, filter: "blur(8px)" }}
-      transition={{
-        y: {
-          type: "spring",
-          stiffness: 250,
-          damping: 15,
-          delay: index * 0.08,
-        },
-        exit: { duration: 0.4 },
-      }}
+      animate={{ y: 0, opacity: 1, transition: { type: "spring", stiffness: 250, damping: 15, delay: index * 0.08 } }}
+      exit={{ scale: 0, opacity: 0, filter: "blur(8px)", transition: { duration: 0.4 } }}
       className="w-44 bg-card border border-border rounded-xl overflow-hidden group relative"
     >
       {/* Video thumbnail */}
