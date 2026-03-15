@@ -1,15 +1,18 @@
 import { useState, useCallback } from "react";
 import UploadDropZone from "@/components/UploadDropZone";
 import CreativeBrief from "@/components/CreativeBrief";
+import ScoreBrief from "@/components/ScoreBrief";
 import AmbientBackground from "@/components/AmbientBackground";
 import { RotateCcw } from "lucide-react";
 import type { VideoClip, CreativeBriefData } from "@/types/amadeus";
 
-type Phase = "upload" | "brief" | "done";
+type Phase = "upload" | "brief" | "score" | "done";
 
 const Index = () => {
   const [phase, setPhase] = useState<Phase>("upload");
   const [clips, setClips] = useState<VideoClip[]>([]);
+  const [briefData, setBriefData] = useState<CreativeBriefData | null>(null);
+  const [editFromStep, setEditFromStep] = useState<number | null>(null);
 
   const handleClipsReady = useCallback((readyClips: VideoClip[]) => {
     setClips(readyClips);
@@ -17,14 +20,15 @@ const Index = () => {
   }, []);
 
   const handleBriefComplete = useCallback((brief: CreativeBriefData) => {
-    console.log("Brief submitted:", brief);
-    console.log("Clips:", clips.map((c) => ({ id: c.id, name: c.name })));
-    setPhase("done");
-  }, [clips]);
+    setBriefData(brief);
+    setPhase("score");
+  }, []);
 
   const handleStartOver = useCallback(() => {
     clips.forEach((c) => URL.revokeObjectURL(c.objectUrl));
     setClips([]);
+    setBriefData(null);
+    setEditFromStep(null);
     setPhase("upload");
   }, [clips]);
 
@@ -32,11 +36,25 @@ const Index = () => {
     setPhase("upload");
   }, []);
 
+  const handleEditQuestion = useCallback((step: number) => {
+    setEditFromStep(step);
+    setPhase("brief");
+  }, []);
+
+  const handleReanalyse = useCallback(() => {
+    setBriefData(null);
+    setEditFromStep(null);
+    setPhase("brief");
+  }, []);
+
+  const handleContinue = useCallback(() => {
+    setPhase("done");
+  }, []);
+
   return (
     <div className="min-h-screen bg-background relative">
       <AmbientBackground />
 
-      {/* Start Over button - top right, always visible */}
       {phase !== "upload" && (
         <button
           onClick={handleStartOver}
@@ -50,7 +68,21 @@ const Index = () => {
       <div className="relative z-10">
         {phase === "upload" && <UploadDropZone onClipsReady={handleClipsReady} />}
         {phase === "brief" && (
-          <CreativeBrief onComplete={handleBriefComplete} onBack={handleBackToUpload} />
+          <CreativeBrief
+            onComplete={handleBriefComplete}
+            onBack={handleBackToUpload}
+            initialStep={editFromStep}
+            initialData={briefData}
+          />
+        )}
+        {phase === "score" && briefData && (
+          <ScoreBrief
+            brief={briefData}
+            clipCount={clips.length}
+            onEditQuestion={handleEditQuestion}
+            onContinue={handleContinue}
+            onReanalyse={handleReanalyse}
+          />
         )}
         {phase === "done" && (
           <div className="min-h-screen flex flex-col items-center justify-center gap-4">
