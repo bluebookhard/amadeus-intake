@@ -14,19 +14,8 @@ const ENERGY_OPTIONS = [
   { label: "Rebellious", emoji: "🔥", response: "Break the rules." },
 ];
 
-const MUSIC_OPTIONS = [
-  { label: "Hip Hop", emoji: "🎤", response: "Hard-hitting." },
-  { label: "Cinematic", emoji: "🎻", response: "Sweeping." },
-  { label: "Lo-Fi", emoji: "☁️", response: "Smooth and slow." },
-  { label: "Electronic", emoji: "🎛️", response: "Pure pulse." },
-  { label: "Acoustic", emoji: "🎸", response: "Raw and real." },
-  { label: "Pop", emoji: "✨", response: "Instant hook." },
-  { label: "Jazz", emoji: "🎷", response: "Cool and complex." },
-  { label: "Ambient", emoji: "🌊", response: "Wide open spaces." },
-];
-
-const TOTAL_STEPS = 3;
-type Step = 0 | 1 | 2;
+const TOTAL_STEPS = 2;
+type Step = 0 | 1;
 
 interface Props {
   onComplete: (brief: CreativeBriefData) => void;
@@ -38,7 +27,6 @@ interface Props {
 export default function CreativeBrief({ onComplete, onBack, initialStep, initialData }: Props) {
   const [step, setStep] = useState<Step>((initialStep ?? 0) as Step);
   const [selectedEnergy, setSelectedEnergy] = useState<string | null>(initialData?.overall_energy ?? null);
-  const [selectedMusic, setSelectedMusic] = useState<string | null>(initialData?.music_style_direction ?? null);
   const [references, setReferences] = useState(initialData?.references_text ?? "");
   const [showResponse, setShowResponse] = useState(false);
   const [responseLine, setResponseLine] = useState("");
@@ -66,21 +54,16 @@ export default function CreativeBrief({ onComplete, onBack, initialStep, initial
     advanceAfterResponse({ label: opt.label, emoji: opt.emoji }, opt.response, 1);
   }, [advanceAfterResponse]);
 
-  const handleMusicSelect = useCallback((opt: typeof MUSIC_OPTIONS[0]) => {
-    setSelectedMusic(opt.label);
-    advanceAfterResponse({ label: opt.label, emoji: opt.emoji }, opt.response, 2);
-  }, [advanceAfterResponse]);
-
   const submitBrief = useCallback((refText: string) => {
     setFlashOut(true);
     setTimeout(() => {
       onComplete({
         overall_energy: selectedEnergy!,
-        music_style_direction: selectedMusic!,
+        music_style_direction: "",
         references_text: refText,
       });
     }, 500);
-  }, [selectedEnergy, selectedMusic, onComplete]);
+  }, [selectedEnergy, onComplete]);
 
   const handleReferencesSubmit = useCallback(() => {
     submitBrief(references);
@@ -96,28 +79,22 @@ export default function CreativeBrief({ onComplete, onBack, initialStep, initial
       onBack();
       return;
     }
-    const prevStep = (step - 1) as Step;
-    // Clear the answer for the previous step
-    if (prevStep === 0) setSelectedEnergy(null);
-    if (prevStep === 1) setSelectedMusic(null);
-    // Remove last confirmed answer
+    setSelectedEnergy(null);
     setConfirmedAnswers((prev) => prev.slice(0, -1));
-    setStep(prevStep);
+    setStep(0);
   }, [step, onBack, showResponse, transitioning]);
 
   useEffect(() => {
-    if (step === 2 && inputRef.current) {
+    if (step === 1 && inputRef.current) {
       inputRef.current.focus();
     }
   }, [step]);
 
   const questions: Record<Step, { emoji: string; text: string }> = {
     0: { emoji: "🔥", text: "What's the energy of your video?" },
-    1: { emoji: "🎵", text: "What kind of music fits the vibe?" },
-    2: { emoji: "✨", text: "Any artists or tracks for inspiration?" },
+    1: { emoji: "✨", text: "Any artists or tracks for inspiration?" },
   };
 
-  // Progress: 0 → 0%, after Q1 → 33%, after Q2 → 66%, done → 100%
   const progressPercent = (step / TOTAL_STEPS) * 100;
 
   return (
@@ -156,10 +133,8 @@ export default function CreativeBrief({ onComplete, onBack, initialStep, initial
               transition={{ duration: 0.4, ease: "easeOut" }}
               className="flex flex-col items-center"
             >
-              {/* Emoji */}
               <motion.span className="text-5xl mb-6">{questions[step].emoji}</motion.span>
 
-              {/* Question or Response line */}
               <AnimatePresence mode="wait">
                 {showResponse ? (
                   <motion.p
@@ -186,7 +161,6 @@ export default function CreativeBrief({ onComplete, onBack, initialStep, initial
                 )}
               </AnimatePresence>
 
-              {/* Chips for Q1 and Q2 */}
               {step === 0 && !showResponse && (
                 <ChipGrid
                   options={ENERGY_OPTIONS}
@@ -194,16 +168,8 @@ export default function CreativeBrief({ onComplete, onBack, initialStep, initial
                   onSelect={handleEnergySelect}
                 />
               )}
-              {step === 1 && !showResponse && (
-                <ChipGrid
-                  options={MUSIC_OPTIONS}
-                  selected={selectedMusic}
-                  onSelect={handleMusicSelect}
-                />
-              )}
 
-              {/* Text input for Q3 */}
-              {step === 2 && (
+              {step === 1 && (
                 <div className="w-full flex flex-col items-center gap-4">
                   <input
                     ref={inputRef}
@@ -238,9 +204,8 @@ export default function CreativeBrief({ onComplete, onBack, initialStep, initial
         </AnimatePresence>
       </div>
 
-      {/* Bottom bar: back button + progress */}
+      {/* Bottom bar */}
       <div className="absolute bottom-0 left-0 right-0">
-        {/* Back button */}
         <div className="flex justify-start px-8 pb-6">
           <button
             onClick={handleBack}
@@ -251,8 +216,6 @@ export default function CreativeBrief({ onComplete, onBack, initialStep, initial
             Back
           </button>
         </div>
-
-        {/* Progress bar */}
         <div className="h-1 w-full bg-secondary">
           <motion.div
             className="h-full bg-primary"
