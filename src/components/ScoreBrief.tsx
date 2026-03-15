@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil } from "lucide-react";
+import { Pencil, ChevronLeft } from "lucide-react";
 import type { CreativeBriefData } from "@/types/amadeus";
 
 interface Props {
@@ -9,6 +9,7 @@ interface Props {
   onEditQuestion: (step: number) => void;
   onContinue: () => void;
   onReanalyse: () => void;
+  onBack: () => void;
 }
 
 function AnimatedNumber({ target, duration = 1.5 }: { target: number; duration?: number }) {
@@ -42,7 +43,7 @@ function getNarrative(brief: CreativeBriefData): string {
   return `We'll compose a ${brief.music_style_direction} ${brief.overall_energy.toLowerCase()} score — built to move with your story.`;
 }
 
-export default function ScoreBrief({ brief, clipCount, onEditQuestion, onContinue, onReanalyse }: Props) {
+export default function ScoreBrief({ brief, clipCount, onEditQuestion, onContinue, onReanalyse, onBack }: Props) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [flashOut, setFlashOut] = useState(false);
 
@@ -96,11 +97,21 @@ export default function ScoreBrief({ brief, clipCount, onEditQuestion, onContinu
       </AnimatePresence>
 
       <motion.div
-        className="fixed inset-0 z-50 bg-background flex items-center justify-center overflow-auto py-12 px-4"
+        className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center overflow-auto py-12 px-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: flashOut ? 0 : 1 }}
         transition={{ duration: 0.4 }}
       >
+        {/* Back button */}
+        <div className="w-full max-w-[640px] mb-4">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
+        </div>
         <motion.div
           className="w-full max-w-[640px] bg-card border border-border rounded-[20px] p-8 md:p-10"
           initial={{ scale: 0.92, opacity: 0 }}

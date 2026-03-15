@@ -41,10 +41,13 @@ const Index = () => {
     setPhase("brief");
   }, []);
 
-  const handleReanalyse = useCallback(() => {
-    setBriefData(null);
+  const handleBackToBrief = useCallback(() => {
     setEditFromStep(null);
     setPhase("brief");
+  }, []);
+
+  const handleBackToScore = useCallback(() => {
+    setPhase("score");
   }, []);
 
   const handleContinue = useCallback(() => {
@@ -81,7 +84,8 @@ const Index = () => {
             clipCount={clips.length}
             onEditQuestion={handleEditQuestion}
             onContinue={handleContinue}
-            onReanalyse={handleReanalyse}
+            onReanalyse={() => { setBriefData(null); setEditFromStep(null); setPhase("brief"); }}
+            onBack={handleBackToBrief}
           />
         )}
         {phase === "done" && (
@@ -89,12 +93,20 @@ const Index = () => {
             <span className="text-5xl">✦</span>
             <h1 className="text-2xl font-bold text-foreground">You're all set.</h1>
             <p className="text-muted-foreground text-sm">Workspace coming in the next phase.</p>
-            <button
-              onClick={handleStartOver}
-              className="mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              ← Start over
-            </button>
+            <div className="flex items-center gap-6 mt-4">
+              <button
+                onClick={handleBackToScore}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                ← Back
+              </button>
+              <button
+                onClick={handleStartOver}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Start over
+              </button>
+            </div>
           </div>
         )}
       </div>
