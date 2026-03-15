@@ -43,7 +43,7 @@ function getNarrative(brief: CreativeBriefData): string {
   return `We'll compose a ${brief.music_style_direction} ${brief.overall_energy.toLowerCase()} score — built to move with your story.`;
 }
 
-export default function ScoreBrief({ brief, clipCount, onEditQuestion, onContinue, onReanalyse }: Props) {
+export default function ScoreBrief({ brief, clipCount, onEditQuestion, onContinue, onReanalyse, onBack }: Props) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [flashOut, setFlashOut] = useState(false);
 
