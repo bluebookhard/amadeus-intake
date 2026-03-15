@@ -132,7 +132,7 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
       >
         {/* Back button — only show after reveal */}
         <AnimatePresence>
-          {revealPhase >= 3 && (
+          {revealPhase >= 4 && (
             <motion.div
               className="w-full max-w-[640px] mb-4"
               initial={{ opacity: 0 }}
@@ -160,7 +160,7 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
                 initial={{ opacity: 0 }}
                 animate={{ opacity: revealPhase === 1 ? 1 : 0 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.6 }}
+                transition={{ duration: 0.8 }}
                 className="text-lg text-muted-foreground font-medium mb-4"
               >
                 Okay...
@@ -168,38 +168,38 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
             )}
           </AnimatePresence>
 
-          {/* Phase 2: "Here's what we found" */}
+          {/* Phase 2: Big centered "Here's what we found" */}
           <AnimatePresence>
             {revealPhase >= 2 && revealPhase < 3 && (
               <motion.h2
-                key="headline"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.6 }}
-                className="text-2xl font-bold text-foreground"
+                key="headline-big"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.0, ease: [0.23, 1, 0.32, 1] }}
+                className="text-3xl md:text-4xl font-bold text-foreground text-center"
               >
                 Here's what we found
               </motion.h2>
             )}
           </AnimatePresence>
 
-          {/* Phase 3: Full content card */}
+          {/* Phase 3+: Card with headline shrunk into header */}
           <AnimatePresence>
             {revealPhase >= 3 && (
               <motion.div
                 className="w-full bg-card border border-border rounded-[20px] p-8 md:p-10"
                 initial={{ scale: 0.92, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
+                transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
               >
                 <div className="flex flex-col gap-8">
-                  {/* Header */}
+                  {/* Header — headline shrinks into position */}
                   <motion.div
                     className="text-center"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
+                    initial={{ opacity: 0, scale: 1.8, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ duration: 0.9, ease: [0.23, 1, 0.32, 1] }}
                   >
                     <p className="text-[0.7rem] font-mono uppercase tracking-[0.2em] text-primary">
                       Here's what we found
