@@ -139,7 +139,22 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
             )}
           </AnimatePresence>
 
-          {/* Persistent headline: appears phase 2, animates position at phase 3 */}
+          {/* Phase 2: "Here's what we found" centered, no background */}
+          <AnimatePresence>
+            {revealPhase >= 2 && revealPhase < 3 && (
+              <motion.h2
+                key="headline"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.2 }}
+                className="text-3xl md:text-4xl font-bold text-foreground text-center"
+              >
+                Here's what we found
+              </motion.h2>
+            )}
+          </AnimatePresence>
+
           {/* Phase 3+: Main card */}
           <AnimatePresence>
             {revealPhase >= 3 && (
@@ -152,7 +167,7 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
                 <div className="flex flex-col gap-6">
                   {/* Header */}
                   <div className="text-center">
-                    <h2 className="text-2xl md:text-3xl font-display font-normal text-foreground">
+                    <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                       Here's what we found
                     </h2>
                   </div>
