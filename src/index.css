@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -9,44 +9,44 @@
     --background: 0 0% 0%;
     --foreground: 0 0% 100%;
 
-    --card: 0 0% 5.9%;
+    --card: 0 0% 7%;
     --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 5.9%;
+    --popover: 0 0% 7%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 271 91% 65%;
+    --primary: 271 70% 68%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 10%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 100% / 0.6;
+    --muted-foreground: 0 0% 100% / 0.45;
 
-    --accent: 271 91% 65%;
+    --accent: 271 70% 68%;
     --accent-foreground: 0 0% 100%;
-    --accent-dim: 271 91% 65% / 0.15;
+    --accent-dim: 271 70% 68% / 0.15;
 
     --destructive: 0 86% 71%;
     --destructive-foreground: 0 0% 100%;
 
     --amber: 36 90% 55%;
 
-    --border: 0 0% 100% / 0.08;
-    --input: 0 0% 100% / 0.08;
-    --ring: 271 91% 65%;
+    --border: 0 0% 100% / 0.07;
+    --input: 0 0% 100% / 0.07;
+    --ring: 271 70% 68%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 5.9%;
+    --sidebar-background: 0 0% 7%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 271 91% 65%;
+    --sidebar-primary: 271 70% 68%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 10%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 100% / 0.08;
-    --sidebar-ring: 271 91% 65%;
+    --sidebar-border: 0 0% 100% / 0.07;
+    --sidebar-ring: 271 70% 68%;
   }
 }
 
@@ -67,7 +67,7 @@
   }
 
   .chip:hover {
-    border-color: hsl(271 91% 65% / 0.5);
+    border-color: hsl(271 70% 68% / 0.5);
     background: hsl(0 0% 8%);
   }
 
