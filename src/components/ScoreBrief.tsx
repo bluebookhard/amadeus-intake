@@ -85,8 +85,8 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
   // Simplified 3-phase reveal: 1=Okay, 2=headline+card, 3=card content
   useEffect(() => {
     const t1 = setTimeout(() => setRevealPhase(1), 400);
-    const t2 = setTimeout(() => setRevealPhase(2), 1800);
-    const t3 = setTimeout(() => setRevealPhase(3), 3000);
+    const t2 = setTimeout(() => setRevealPhase(2), 2800);
+    const t3 = setTimeout(() => setRevealPhase(3), 5000);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, []);
 
