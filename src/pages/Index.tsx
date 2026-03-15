@@ -12,7 +12,7 @@ const Index = () => {
   const [phase, setPhase] = useState<Phase>("upload");
   const [clips, setClips] = useState<VideoClip[]>([]);
   const [briefData, setBriefData] = useState<CreativeBriefData | null>(null);
-  const [editFromStep, setEditFromStep] = useState<number | null>(null);
+  
 
   const handleClipsReady = useCallback((readyClips: VideoClip[]) => {
     setClips(readyClips);
