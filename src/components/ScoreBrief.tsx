@@ -102,6 +102,16 @@ export default function ScoreBrief({ brief, clipCount, onEditQuestion, onContinu
         animate={{ opacity: flashOut ? 0 : 1 }}
         transition={{ duration: 0.4 }}
       >
+        {/* Back button */}
+        <div className="w-full max-w-[640px] mb-4">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
+        </div>
         <motion.div
           className="w-full max-w-[640px] bg-card border border-border rounded-[20px] p-8 md:p-10"
           initial={{ scale: 0.92, opacity: 0 }}

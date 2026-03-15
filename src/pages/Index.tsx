@@ -41,10 +41,13 @@ const Index = () => {
     setPhase("brief");
   }, []);
 
-  const handleReanalyse = useCallback(() => {
-    setBriefData(null);
+  const handleBackToBrief = useCallback(() => {
     setEditFromStep(null);
     setPhase("brief");
+  }, []);
+
+  const handleBackToScore = useCallback(() => {
+    setPhase("score");
   }, []);
 
   const handleContinue = useCallback(() => {
