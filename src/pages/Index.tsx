@@ -12,7 +12,6 @@ const Index = () => {
   const [phase, setPhase] = useState<Phase>("upload");
   const [clips, setClips] = useState<VideoClip[]>([]);
   const [briefData, setBriefData] = useState<CreativeBriefData | null>(null);
-  const [editFromStep, setEditFromStep] = useState<number | null>(null);
 
   const handleClipsReady = useCallback((readyClips: VideoClip[]) => {
     setClips(readyClips);
@@ -28,7 +27,6 @@ const Index = () => {
     clips.forEach((c) => URL.revokeObjectURL(c.objectUrl));
     setClips([]);
     setBriefData(null);
-    setEditFromStep(null);
     setPhase("upload");
   }, [clips]);
 
@@ -36,13 +34,7 @@ const Index = () => {
     setPhase("upload");
   }, []);
 
-  const handleEditQuestion = useCallback((step: number) => {
-    setEditFromStep(step);
-    setPhase("brief");
-  }, []);
-
   const handleBackToBrief = useCallback(() => {
-    setEditFromStep(null);
     setPhase("brief");
   }, []);
 
@@ -74,7 +66,6 @@ const Index = () => {
           <CreativeBrief
             onComplete={handleBriefComplete}
             onBack={handleBackToUpload}
-            initialStep={editFromStep}
             initialData={briefData}
           />
         )}
@@ -82,9 +73,9 @@ const Index = () => {
           <ScoreBrief
             brief={briefData}
             clipCount={clips.length}
-            onEditQuestion={handleEditQuestion}
+            onBriefChange={setBriefData}
             onContinue={handleContinue}
-            onReanalyse={() => { setBriefData(null); setEditFromStep(null); setPhase("brief"); }}
+            onReanalyse={() => { setBriefData(null); setPhase("brief"); }}
             onBack={handleBackToBrief}
           />
         )}

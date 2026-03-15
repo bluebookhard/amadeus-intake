@@ -221,7 +221,7 @@ export default function CreativeBrief({ onComplete, onBack, initialStep, initial
                         onClick={handleReferencesSubmit}
                         className="px-6 py-2.5 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
                       >
-                        Score My Video ✦
+                        Continue →
                       </motion.button>
                     )}
                     <button
