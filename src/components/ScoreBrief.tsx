@@ -9,6 +9,7 @@ interface Props {
   onEditQuestion: (step: number) => void;
   onContinue: () => void;
   onReanalyse: () => void;
+  onBack: () => void;
 }
 
 function AnimatedNumber({ target, duration = 1.5 }: { target: number; duration?: number }) {
