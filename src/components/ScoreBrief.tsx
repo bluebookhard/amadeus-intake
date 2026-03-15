@@ -141,7 +141,9 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
             {revealPhase >= 2 && (
               <motion.div
                 key="card"
-                className="w-full bg-card border border-border rounded-[20px] p-8 md:p-10"
+                className={`w-full rounded-[20px] p-8 md:p-10 transition-colors duration-500 ${
+                  revealPhase >= 3 ? "bg-card border border-border" : ""
+                }`}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
