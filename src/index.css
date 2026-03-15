@@ -63,7 +63,7 @@
 
 @layer components {
   .chip {
-    @apply flex items-center gap-2 px-5 py-3 rounded-full border border-border bg-card text-muted-foreground cursor-pointer transition-all duration-200 select-none text-sm font-medium;
+    @apply flex items-center gap-2 px-4 py-3 rounded-full border border-border bg-card text-muted-foreground cursor-pointer transition-all duration-200 select-none text-sm font-medium whitespace-nowrap;
   }
 
   .chip:hover {
