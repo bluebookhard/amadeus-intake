@@ -59,12 +59,26 @@ const MUSIC_OPTIONS = [
 
 type EditingField = "energy" | "style" | "references" | null;
 
-function getNarrative(brief: CreativeBriefData): string {
-  const ref = brief.references_text?.trim();
-  if (ref) {
-    return `Think ${ref}-inspired ${brief.music_style_direction}. Your footage sets the tempo.`;
-  }
-  return `We'll compose a ${brief.music_style_direction} ${brief.overall_energy.toLowerCase()} score — built to move with your story.`;
+function getDetectedTheme(brief: CreativeBriefData): string {
+  const energy = brief.overall_energy.toLowerCase();
+  if (["emotional", "romantic"].includes(energy)) return "Personal story";
+  if (["cinematic", "mysterious"].includes(energy)) return "Narrative drama";
+  if (["high energy", "rebellious"].includes(energy)) return "Action / hype";
+  if (["playful"].includes(energy)) return "Lifestyle / vlog";
+  return "Creative project";
+}
+
+function getSuggestedStyle(brief: CreativeBriefData): string {
+  const style = brief.music_style_direction;
+  const energy = brief.overall_energy.toLowerCase();
+  if (style === "Hip Hop" && ["chill", "emotional"].includes(energy)) return "Lo-fi hip hop";
+  if (style === "Hip Hop") return "Boom-bap hip hop";
+  if (style === "Cinematic" && energy === "emotional") return "Orchestral strings";
+  if (style === "Cinematic") return "Epic cinematic";
+  if (style === "Lo-Fi") return "Lo-fi beats";
+  if (style === "Electronic" && energy === "chill") return "Downtempo electronic";
+  if (style === "Electronic") return "Synth-driven electronic";
+  return `${energy} ${style.toLowerCase()}`;
 }
 
 export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue, onReanalyse, onBack }: Props) {
