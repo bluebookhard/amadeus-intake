@@ -97,7 +97,7 @@ export default function ScoreBrief({ brief, clipCount, onEditQuestion, onContinu
       </AnimatePresence>
 
       <motion.div
-        className="fixed inset-0 z-50 bg-background flex items-center justify-center overflow-auto py-12 px-4"
+        className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center overflow-auto py-12 px-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: flashOut ? 0 : 1 }}
         transition={{ duration: 0.4 }}
