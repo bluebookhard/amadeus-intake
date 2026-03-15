@@ -181,14 +181,21 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
           transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
         >
           <motion.div variants={stagger} initial="hidden" animate="show" className="flex flex-col gap-8">
-            {/* AI Read headline */}
+            {/* Header */}
             <motion.div variants={fadeUp} className="text-center">
-              <p className="text-[0.7rem] font-mono uppercase tracking-[0.2em] text-primary mb-4">
+              <p className="text-[0.7rem] font-mono uppercase tracking-[0.2em] text-primary mb-2">
                 Based on your video
               </p>
-              <p className="text-lg md:text-xl font-bold text-foreground">
-                ↑ <AnimatedNumber target={cuts} /> cuts detected · {runtime} runtime · <AnimatedNumber target={scenes} /> scenes identified
-              </p>
+            </motion.div>
+
+            {/* Detected info rows */}
+            <motion.div variants={fadeUp} className="flex flex-col gap-3">
+              {infoRows.map((row) => (
+                <div key={row.label} className="flex items-center justify-between px-4 py-3 bg-background border border-border rounded-xl">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">{row.label}</span>
+                  <span className="text-sm font-semibold text-foreground">{row.value}</span>
+                </div>
+              ))}
             </motion.div>
 
             {/* Selection cards */}
@@ -211,11 +218,6 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
               ))}
             </motion.div>
 
-            {/* AI Narrative */}
-            <motion.p variants={fadeUp} className="text-center text-sm text-muted-foreground italic">
-              "{getNarrative(brief)}"
-            </motion.p>
-
             {/* Actions */}
             <motion.div variants={fadeUp} className="flex flex-col items-center gap-3">
               <button
@@ -234,10 +236,10 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
                     exit={{ opacity: 0, height: 0 }}
                     className="text-center flex flex-col items-center gap-2"
                   >
-                    <p className="text-xs text-muted-foreground">Re-analysing will reset your selections. Continue?</p>
+                    <p className="text-xs text-muted-foreground">This will reset your selections. Continue?</p>
                     <div className="flex gap-4">
                       <button onClick={confirmReanalyse} className="text-xs text-primary hover:underline">
-                        Yes, re-analyse
+                        Yes, start fresh
                       </button>
                       <button onClick={() => setShowConfirm(false)} className="text-xs text-muted-foreground hover:text-foreground">
                         Cancel
@@ -252,7 +254,7 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
                     onClick={() => setShowConfirm(true)}
                     className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Something's off — re-analyse
+                    Not quite right? Start over
                   </motion.button>
                 )}
               </AnimatePresence>
