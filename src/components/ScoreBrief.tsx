@@ -140,34 +140,22 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
           </AnimatePresence>
 
           {/* Persistent headline: appears phase 2, animates position at phase 3 */}
-          {revealPhase >= 2 && (
-            <motion.h2
-              className="font-display font-normal text-foreground text-center z-10"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{
-                opacity: 1,
-                scale: revealPhase >= 3 ? 1 : 1,
-                y: revealPhase >= 3 ? -180 : 0,
-                fontSize: revealPhase >= 3 ? "1.75rem" : "2.25rem",
-              }}
-              transition={{ duration: 1.0, ease: [0.23, 1, 0.32, 1] }}
-            >
-              Here's what we found
-            </motion.h2>
-          )}
-
-          {/* Phase 3+: Card appears behind the headline */}
+          {/* Phase 3+: Main card */}
           <AnimatePresence>
             {revealPhase >= 3 && (
               <motion.div
-                className="w-full bg-card border border-border rounded-[20px] p-8 md:p-10 mt-[-40px]"
-                initial={{ scale: 0.92, opacity: 0, y: 40 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
+                className="w-full bg-card border border-border rounded-[20px] p-8 md:p-10"
+                initial={{ scale: 0.92, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
               >
                 <div className="flex flex-col gap-6">
-                  {/* Spacer for the headline that floats above */}
-                  <div className="h-8" />
+                  {/* Header */}
+                  <div className="text-center">
+                    <h2 className="text-2xl md:text-3xl font-display font-normal text-foreground">
+                      Here's what we found
+                    </h2>
+                  </div>
 
                   {/* Content fades in at phase 4 */}
                   <AnimatePresence>
