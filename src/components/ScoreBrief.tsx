@@ -122,61 +122,52 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
         animate={{ opacity: flashOut ? 0 : 1 }}
         transition={{ duration: 0.4 }}
       >
-        <div className="w-full max-w-[560px] flex flex-col items-center">
+        <div className="w-full max-w-[560px] flex flex-col items-center relative">
           {/* Phase 1: "Okay..." */}
           <AnimatePresence>
-            {revealPhase >= 1 && revealPhase < 3 && (
+            {revealPhase >= 1 && revealPhase < 2 && (
               <motion.p
                 key="okay"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: revealPhase === 1 ? 1 : 0 }}
+                animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.8 }}
-                className="text-lg text-muted-foreground font-medium mb-4"
+                className="text-lg text-muted-foreground font-medium"
               >
                 Okay...
               </motion.p>
             )}
           </AnimatePresence>
 
-          {/* Phase 2: Big centered "Here's what we found" */}
-          <AnimatePresence>
-            {revealPhase >= 2 && revealPhase < 3 && (
-              <motion.h2
-                key="headline-big"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 1.0, ease: [0.23, 1, 0.32, 1] }}
-                className="text-3xl md:text-4xl font-bold text-foreground text-center"
-                style={{ fontFamily: "'DM Serif Display', serif" }}
-              >
-                Here's what we found
-              </motion.h2>
-            )}
-          </AnimatePresence>
+          {/* Persistent headline: appears phase 2, animates position at phase 3 */}
+          {revealPhase >= 2 && (
+            <motion.h2
+              className="font-display font-normal text-foreground text-center z-10"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{
+                opacity: 1,
+                scale: revealPhase >= 3 ? 1 : 1,
+                y: revealPhase >= 3 ? -180 : 0,
+                fontSize: revealPhase >= 3 ? "1.75rem" : "2.25rem",
+              }}
+              transition={{ duration: 1.0, ease: [0.23, 1, 0.32, 1] }}
+            >
+              Here's what we found
+            </motion.h2>
+          )}
 
-          {/* Phase 3+: Main card */}
+          {/* Phase 3+: Card appears behind the headline */}
           <AnimatePresence>
             {revealPhase >= 3 && (
               <motion.div
-                className="w-full bg-card border border-border rounded-[20px] p-8 md:p-10"
-                initial={{ scale: 0.92, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
+                className="w-full bg-card border border-border rounded-[20px] p-8 md:p-10 mt-[-40px]"
+                initial={{ scale: 0.92, opacity: 0, y: 40 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
               >
                 <div className="flex flex-col gap-6">
-                  {/* Header */}
-                  <motion.div
-                    className="text-center"
-                    initial={{ opacity: 0, scale: 1.8, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ duration: 0.9, ease: [0.23, 1, 0.32, 1] }}
-                  >
-                    <h2 className="text-2xl md:text-3xl font-bold text-foreground" style={{ fontFamily: "'DM Serif Display', serif" }}>
-                      Here's what we found
-                    </h2>
-                  </motion.div>
+                  {/* Spacer for the headline that floats above */}
+                  <div className="h-8" />
 
                   {/* Content fades in at phase 4 */}
                   <AnimatePresence>
@@ -192,7 +183,7 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
                           <p className="text-base md:text-lg text-foreground leading-relaxed">
                             You want a <span className="font-bold text-primary">{brief.overall_energy}</span> vibe and your video looks like a <span className="font-bold text-primary">{detectedTheme}</span>.
                           </p>
-                          <p className="text-sm text-primary/70 italic mt-3" style={{ fontFamily: "'DM Serif Display', serif" }}>
+                          <p className="text-sm text-primary/70 italic mt-3 font-display font-normal">
                             "{vibeDescription}"
                           </p>
                         </div>
@@ -230,7 +221,7 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
                             onClick={handleContinue}
                             className="flex-1 py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
                           >
-                            Score My Video
+                            Continue
                           </button>
                         </div>
                       </motion.div>
