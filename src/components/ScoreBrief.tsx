@@ -126,9 +126,15 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
     show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } },
   };
 
-  const cuts = 87 + clipCount * 40;
-  const runtime = `~${Math.floor((clipCount * 38) / 60)}m ${(clipCount * 38) % 60}s`;
-  const scenes = Math.max(2, clipCount + 1);
+   const detectedTheme = getDetectedTheme(brief);
+   const suggestedStyle = getSuggestedStyle(brief);
+   const dominantVisual = "Speaker, warm lighting";
+
+   const infoRows = [
+     { label: "Detected Theme", value: detectedTheme },
+     { label: "Dominant Visual", value: dominantVisual },
+     { label: "Suggested Music Style", value: suggestedStyle },
+   ];
 
   const cards = [
     { icon: ENERGY_EMOJI[brief.overall_energy] || "⚡", value: brief.overall_energy, label: "Your energy", field: "energy" as EditingField },
