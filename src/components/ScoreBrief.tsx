@@ -12,11 +12,6 @@ interface Props {
   onBack: () => void;
 }
 
-const ENERGY_EMOJI: Record<string, string> = {
-  "High Energy": "⚡", "Chill": "😌", "Emotional": "🥹", "Cinematic": "🎬",
-  "Playful": "😄", "Mysterious": "🌙", "Romantic": "🌹", "Rebellious": "🔥",
-};
-
 const ENERGY_OPTIONS = [
   { label: "High Energy", emoji: "⚡" },
   { label: "Chill", emoji: "😌" },
@@ -39,30 +34,60 @@ const MUSIC_OPTIONS = [
   { label: "Ambient", emoji: "🌊" },
 ];
 
-type EditingField = "energy" | "style" | "references" | null;
+type EditingField = "style" | null;
 
 function getDetectedTheme(brief: CreativeBriefData): string {
   const energy = brief.overall_energy.toLowerCase();
-  if (["emotional", "romantic"].includes(energy)) return "Personal story";
-  if (["cinematic", "mysterious"].includes(energy)) return "Narrative drama";
-  if (["high energy", "rebellious"].includes(energy)) return "Action / hype";
-  if (["playful"].includes(energy)) return "Lifestyle / vlog";
-  return "Creative project";
+  if (["emotional", "romantic"].includes(energy)) return "Personal Story";
+  if (["cinematic", "mysterious"].includes(energy)) return "Narrative Drama";
+  if (["high energy", "rebellious"].includes(energy)) return "Montage";
+  if (["playful"].includes(energy)) return "Lifestyle Vlog";
+  if (["chill"].includes(energy)) return "Mood Piece";
+  return "Creative Project";
+}
+
+function getRecommendedStyle(energy: string, theme: string): string {
+  const e = energy.toLowerCase();
+  if (["high energy", "rebellious"].includes(e)) return "Upbeat Electronic";
+  if (["cinematic", "mysterious"].includes(e)) return "Cinematic Orchestral";
+  if (["emotional", "romantic"].includes(e)) return "Acoustic Ballad";
+  if (["chill"].includes(e)) return "Lo-Fi Chill";
+  if (["playful"].includes(e)) return "Pop Upbeat";
+  return "Electronic";
+}
+
+function getVibeDescription(energy: string, theme: string): string {
+  const e = energy.toLowerCase();
+  if (["high energy", "rebellious"].includes(e)) return "Fast-paced montage";
+  if (["cinematic", "mysterious"].includes(e)) return "Dramatic narrative";
+  if (["emotional", "romantic"].includes(e)) return "Intimate storytelling";
+  if (["chill"].includes(e)) return "Smooth and relaxed";
+  if (["playful"].includes(e)) return "Fun and lighthearted";
+  return "Creative expression";
 }
 
 export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue, onReanalyse, onBack }: Props) {
-  const [showConfirm, setShowConfirm] = useState(false);
   const [flashOut, setFlashOut] = useState(false);
   const [editing, setEditing] = useState<EditingField>(null);
-  const [editReferences, setEditReferences] = useState(brief.references_text ?? "");
-  const [revealPhase, setRevealPhase] = useState(0); // 0=nothing, 1=okay, 2=headline-big, 3=headline-shrink, 4=content
+  const [revealPhase, setRevealPhase] = useState(0);
+
+  const detectedTheme = getDetectedTheme(brief);
+  const recommendedStyle = brief.music_style_direction || getRecommendedStyle(brief.overall_energy, detectedTheme);
+  const vibeDescription = getVibeDescription(brief.overall_energy, detectedTheme);
+
+  // Set initial recommended style if not set
+  useEffect(() => {
+    if (!brief.music_style_direction) {
+      onBriefChange({ ...brief, music_style_direction: getRecommendedStyle(brief.overall_energy, detectedTheme) });
+    }
+  }, []);
 
   // Dramatic reveal sequence
   useEffect(() => {
-    const t1 = setTimeout(() => setRevealPhase(1), 400);    // "Okay..."
-    const t2 = setTimeout(() => setRevealPhase(2), 1600);   // Big centered headline
-    const t3 = setTimeout(() => setRevealPhase(3), 3200);   // Headline shrinks & slides up
-    const t4 = setTimeout(() => setRevealPhase(4), 4200);   // Content fades in
+    const t1 = setTimeout(() => setRevealPhase(1), 400);
+    const t2 = setTimeout(() => setRevealPhase(2), 1600);
+    const t3 = setTimeout(() => setRevealPhase(3), 3200);
+    const t4 = setTimeout(() => setRevealPhase(4), 4200);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
   }, []);
 
@@ -71,43 +96,10 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
     setTimeout(onContinue, 400);
   }, [onContinue]);
 
-  const handleSelectEnergy = useCallback((label: string) => {
-    onBriefChange({ ...brief, overall_energy: label });
-    setEditing(null);
-  }, [brief, onBriefChange]);
-
   const handleSelectStyle = useCallback((label: string) => {
     onBriefChange({ ...brief, music_style_direction: label });
     setEditing(null);
   }, [brief, onBriefChange]);
-
-  const handleSaveReferences = useCallback(() => {
-    onBriefChange({ ...brief, references_text: editReferences });
-    setEditing(null);
-  }, [brief, editReferences, onBriefChange]);
-
-  const openEdit = useCallback((field: EditingField) => {
-    if (field === "references") setEditReferences(brief.references_text ?? "");
-    setEditing(field);
-  }, [brief.references_text]);
-
-  const confirmReanalyse = useCallback(() => {
-    onReanalyse();
-  }, [onReanalyse]);
-
-  const detectedTheme = getDetectedTheme(brief);
-  const dominantVisual = "Speaker, warm lighting";
-
-  const infoRows = [
-    { label: "Detected Theme", value: detectedTheme },
-    { label: "Dominant Visual", value: dominantVisual },
-  ];
-
-  const cards = [
-    { icon: ENERGY_EMOJI[brief.overall_energy] || "⚡", value: brief.overall_energy, label: "Your energy", field: "energy" as EditingField },
-    { icon: "🎵", value: brief.music_style_direction || "Not set", label: "Your style", field: "style" as EditingField },
-    { icon: "✨", value: brief.references_text?.trim() || "—", label: "Inspiration", field: "references" as EditingField },
-  ];
 
   return (
     <>
@@ -130,28 +122,7 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
         animate={{ opacity: flashOut ? 0 : 1 }}
         transition={{ duration: 0.4 }}
       >
-        {/* Back button — only show after reveal */}
-        <AnimatePresence>
-          {revealPhase >= 4 && (
-            <motion.div
-              className="w-full max-w-[640px] mb-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <button
-                onClick={onBack}
-                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Reveal sequence */}
-        <div className="w-full max-w-[640px] flex flex-col items-center">
+        <div className="w-full max-w-[560px] flex flex-col items-center">
           {/* Phase 1: "Okay..." */}
           <AnimatePresence>
             {revealPhase >= 1 && revealPhase < 3 && (
@@ -178,13 +149,14 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
                 exit={{ opacity: 0 }}
                 transition={{ duration: 1.0, ease: [0.23, 1, 0.32, 1] }}
                 className="text-3xl md:text-4xl font-bold text-foreground text-center"
+                style={{ fontFamily: "'DM Serif Display', serif" }}
               >
                 Here's what we found
               </motion.h2>
             )}
           </AnimatePresence>
 
-          {/* Phase 3+: Card with headline shrunk into header */}
+          {/* Phase 3+: Main card */}
           <AnimatePresence>
             {revealPhase >= 3 && (
               <motion.div
@@ -193,103 +165,73 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
               >
-                <div className="flex flex-col gap-8">
-                  {/* Header — headline shrinks into position */}
+                <div className="flex flex-col gap-6">
+                  {/* Header */}
                   <motion.div
                     className="text-center"
                     initial={{ opacity: 0, scale: 1.8, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     transition={{ duration: 0.9, ease: [0.23, 1, 0.32, 1] }}
                   >
-                    <p className="text-[0.7rem] font-mono uppercase tracking-[0.2em] text-primary">
+                    <h2 className="text-2xl md:text-3xl font-bold text-foreground" style={{ fontFamily: "'DM Serif Display', serif" }}>
                       Here's what we found
-                    </p>
+                    </h2>
                   </motion.div>
 
                   {/* Content fades in at phase 4 */}
                   <AnimatePresence>
                     {revealPhase >= 4 && (
                       <motion.div
-                        className="flex flex-col gap-8"
+                        className="flex flex-col gap-6"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.1, ease: [0.23, 1, 0.32, 1] }}
                       >
-                        {/* Detected info rows */}
-                        <div className="flex flex-col gap-3">
-                          {infoRows.map((row) => (
-                            <div key={row.label} className="flex items-center justify-between px-4 py-3 bg-background border border-border rounded-xl">
-                              <span className="text-xs text-muted-foreground uppercase tracking-wider">{row.label}</span>
-                              <span className="text-sm font-semibold text-foreground">{row.value}</span>
-                            </div>
-                          ))}
+                        {/* Summary sentence card */}
+                        <div className="bg-background border border-border rounded-xl p-6 text-center">
+                          <p className="text-base md:text-lg text-foreground leading-relaxed">
+                            You want a <span className="font-bold text-primary">{brief.overall_energy}</span> vibe and your video looks like a <span className="font-bold text-primary">{detectedTheme}</span>.
+                          </p>
+                          <p className="text-sm text-primary/70 italic mt-3" style={{ fontFamily: "'DM Serif Display', serif" }}>
+                            "{vibeDescription}"
+                          </p>
                         </div>
 
-                        {/* "You're leaning towards" divider */}
+                        {/* Recommendation section */}
                         <div className="text-center">
-                          <p className="text-xs text-muted-foreground uppercase tracking-wider">You're leaning towards</p>
-                        </div>
+                          <p className="text-sm text-muted-foreground mb-4">We recommend going with:</p>
 
-                        {/* Selection cards */}
-                        <div className="grid grid-cols-3 gap-3">
-                          {cards.map((card) => (
-                            <motion.div
-                              key={card.label}
-                              className="relative bg-background border border-border rounded-xl p-4 flex flex-col items-center gap-2 group cursor-pointer"
-                              whileHover={{ y: -4 }}
-                              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                              onClick={() => openEdit(card.field)}
-                            >
-                              <span className="text-2xl">{card.icon}</span>
-                              <span className="text-sm font-semibold text-foreground text-center truncate w-full">{card.value}</span>
-                              <span className="text-[0.65rem] text-muted-foreground uppercase tracking-wider">{card.label}</span>
-                              <span className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 text-muted-foreground">
-                                <Pencil className="w-3 h-3" />
-                              </span>
-                            </motion.div>
-                          ))}
+                          <motion.div
+                            className="inline-flex items-center gap-3 bg-background border border-border rounded-xl px-6 py-4 cursor-pointer group"
+                            whileHover={{ y: -2 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                            onClick={() => setEditing("style")}
+                          >
+                            <span className="text-xl md:text-2xl font-bold text-foreground">{recommendedStyle}</span>
+                            <span className="p-1.5 rounded-lg bg-card border border-border text-muted-foreground group-hover:text-foreground transition-colors">
+                              <Pencil className="w-3.5 h-3.5" />
+                            </span>
+                          </motion.div>
+
+                          <p className="text-xs text-muted-foreground mt-4 max-w-[360px] mx-auto leading-relaxed">
+                            This style will be the default for all sections. Individual sections may vary slightly based on their content.
+                          </p>
                         </div>
 
                         {/* Actions */}
-                        <div className="flex flex-col items-center gap-3">
+                        <div className="flex items-center gap-3 mt-2">
+                          <button
+                            onClick={onBack}
+                            className="flex-1 py-3.5 rounded-xl border border-border text-foreground font-semibold text-sm hover:bg-card transition-colors"
+                          >
+                            Back
+                          </button>
                           <button
                             onClick={handleContinue}
-                            className="w-full py-3.5 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+                            className="flex-1 py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
                           >
-                            Take me to my video →
+                            Score My Video
                           </button>
-
-                          <AnimatePresence mode="wait">
-                            {showConfirm ? (
-                              <motion.div
-                                key="confirm"
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="text-center flex flex-col items-center gap-2"
-                              >
-                                <p className="text-xs text-muted-foreground">This will reset your selections. Continue?</p>
-                                <div className="flex gap-4">
-                                  <button onClick={confirmReanalyse} className="text-xs text-primary hover:underline">
-                                    Yes, start fresh
-                                  </button>
-                                  <button onClick={() => setShowConfirm(false)} className="text-xs text-muted-foreground hover:text-foreground">
-                                    Cancel
-                                  </button>
-                                </div>
-                              </motion.div>
-                            ) : (
-                              <motion.button
-                                key="link"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                onClick={() => setShowConfirm(true)}
-                                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                              >
-                                Not quite right? Start over
-                              </motion.button>
-                            )}
-                          </AnimatePresence>
                         </div>
                       </motion.div>
                     )}
@@ -301,9 +243,9 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
         </div>
       </motion.div>
 
-      {/* Edit Overlay */}
+      {/* Edit Style Overlay */}
       <AnimatePresence>
-        {editing && (
+        {editing === "style" && (
           <motion.div
             className="fixed inset-0 z-[80] flex items-center justify-center"
             initial={{ opacity: 0 }}
@@ -327,80 +269,24 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
                 <X className="w-4 h-4" />
               </button>
 
-              {editing === "energy" && (
-                <div>
-                  <h3 className="text-lg font-bold text-foreground mb-1">Change energy</h3>
-                  <p className="text-sm text-muted-foreground mb-5">What's the energy of your video?</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {ENERGY_OPTIONS.map((opt) => (
-                      <button
-                        key={opt.label}
-                        onClick={() => handleSelectEnergy(opt.label)}
-                        className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
-                          brief.overall_energy === opt.label
-                            ? "border-primary bg-primary/15 text-foreground"
-                            : "border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                        }`}
-                      >
-                        <span>{opt.emoji}</span>
-                        <span>{opt.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {editing === "style" && (
-                <div>
-                  <h3 className="text-lg font-bold text-foreground mb-1">Change style</h3>
-                  <p className="text-sm text-muted-foreground mb-5">What kind of music fits the vibe?</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {MUSIC_OPTIONS.map((opt) => (
-                      <button
-                        key={opt.label}
-                        onClick={() => handleSelectStyle(opt.label)}
-                        className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
-                          brief.music_style_direction === opt.label
-                            ? "border-primary bg-primary/15 text-foreground"
-                            : "border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                        }`}
-                      >
-                        <span>{opt.emoji}</span>
-                        <span>{opt.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {editing === "references" && (
-                <div>
-                  <h3 className="text-lg font-bold text-foreground mb-1">Change inspiration</h3>
-                  <p className="text-sm text-muted-foreground mb-5">Any artists or tracks for inspiration?</p>
-                  <input
-                    autoFocus
-                    value={editReferences}
-                    onChange={(e) => setEditReferences(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSaveReferences()}
-                    placeholder="e.g. Hans Zimmer, Kendrick Lamar..."
-                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary transition-colors mb-4"
-                  />
-                  <div className="flex justify-end gap-3">
-                    <button
-                      onClick={() => { setEditReferences(""); onBriefChange({ ...brief, references_text: "" }); setEditing(null); }}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      Clear
-                    </button>
-                    <button
-                      onClick={handleSaveReferences}
-                      className="px-5 py-2 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
-                    >
-                      Save
-                    </button>
-                  </div>
-                </div>
-              )}
+              <h3 className="text-lg font-bold text-foreground mb-1">Change style</h3>
+              <p className="text-sm text-muted-foreground mb-5">Pick a music style for your video</p>
+              <div className="grid grid-cols-2 gap-2">
+                {MUSIC_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.label}
+                    onClick={() => handleSelectStyle(opt.label)}
+                    className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
+                      brief.music_style_direction === opt.label
+                        ? "border-primary bg-primary/15 text-foreground"
+                        : "border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                    }`}
+                  >
+                    <span>{opt.emoji}</span>
+                    <span>{opt.label}</span>
+                  </button>
+                ))}
+              </div>
             </motion.div>
           </motion.div>
         )}
