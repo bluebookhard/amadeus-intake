@@ -206,63 +206,52 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
                     </p>
                   </motion.div>
 
-                  {/* Detected info rows */}
-                  <motion.div
-                    className="flex flex-col gap-3"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.4 }}
-                  >
-                    {infoRows.map((row) => (
-                      <div key={row.label} className="flex items-center justify-between px-4 py-3 bg-background border border-border rounded-xl">
-                        <span className="text-xs text-muted-foreground uppercase tracking-wider">{row.label}</span>
-                        <span className="text-sm font-semibold text-foreground">{row.value}</span>
-                      </div>
-                    ))}
-                  </motion.div>
-
-                  {/* "You're leaning towards" divider */}
-                  <motion.div
-                    className="text-center"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.6, delay: 0.6 }}
-                  >
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider">You're leaning towards</p>
-                  </motion.div>
-
-                  {/* Selection cards */}
-                  <motion.div
-                    className="grid grid-cols-3 gap-3"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.7 }}
-                  >
-                    {cards.map((card) => (
+                  {/* Content fades in at phase 4 */}
+                  <AnimatePresence>
+                    {revealPhase >= 4 && (
                       <motion.div
-                        key={card.label}
-                        className="relative bg-background border border-border rounded-xl p-4 flex flex-col items-center gap-2 group cursor-pointer"
-                        whileHover={{ y: -4 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                        onClick={() => openEdit(card.field)}
+                        className="flex flex-col gap-8"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.1, ease: [0.23, 1, 0.32, 1] }}
                       >
-                        <span className="text-2xl">{card.icon}</span>
-                        <span className="text-sm font-semibold text-foreground text-center truncate w-full">{card.value}</span>
-                        <span className="text-[0.65rem] text-muted-foreground uppercase tracking-wider">{card.label}</span>
-                        <span className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 text-muted-foreground">
-                          <Pencil className="w-3 h-3" />
-                        </span>
-                      </motion.div>
-                    ))}
-                  </motion.div>
+                        {/* Detected info rows */}
+                        <div className="flex flex-col gap-3">
+                          {infoRows.map((row) => (
+                            <div key={row.label} className="flex items-center justify-between px-4 py-3 bg-background border border-border rounded-xl">
+                              <span className="text-xs text-muted-foreground uppercase tracking-wider">{row.label}</span>
+                              <span className="text-sm font-semibold text-foreground">{row.value}</span>
+                            </div>
+                          ))}
+                        </div>
 
-                  {/* Actions */}
-                  <motion.div
-                    className="flex flex-col items-center gap-3"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.6, delay: 0.9 }}
-                  >
+                        {/* "You're leaning towards" divider */}
+                        <div className="text-center">
+                          <p className="text-xs text-muted-foreground uppercase tracking-wider">You're leaning towards</p>
+                        </div>
+
+                        {/* Selection cards */}
+                        <div className="grid grid-cols-3 gap-3">
+                          {cards.map((card) => (
+                            <motion.div
+                              key={card.label}
+                              className="relative bg-background border border-border rounded-xl p-4 flex flex-col items-center gap-2 group cursor-pointer"
+                              whileHover={{ y: -4 }}
+                              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                              onClick={() => openEdit(card.field)}
+                            >
+                              <span className="text-2xl">{card.icon}</span>
+                              <span className="text-sm font-semibold text-foreground text-center truncate w-full">{card.value}</span>
+                              <span className="text-[0.65rem] text-muted-foreground uppercase tracking-wider">{card.label}</span>
+                              <span className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 text-muted-foreground">
+                                <Pencil className="w-3 h-3" />
+                              </span>
+                            </motion.div>
+                          ))}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex flex-col items-center gap-3">
                     <button
                       onClick={handleContinue}
                       className="w-full py-3.5 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
