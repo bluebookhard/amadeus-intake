@@ -55,14 +55,15 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
   const [flashOut, setFlashOut] = useState(false);
   const [editing, setEditing] = useState<EditingField>(null);
   const [editReferences, setEditReferences] = useState(brief.references_text ?? "");
-  const [revealPhase, setRevealPhase] = useState(0); // 0=nothing, 1=okay, 2=header, 3=content
+  const [revealPhase, setRevealPhase] = useState(0); // 0=nothing, 1=okay, 2=headline-big, 3=headline-shrink, 4=content
 
   // Dramatic reveal sequence
   useEffect(() => {
-    const t1 = setTimeout(() => setRevealPhase(1), 300);   // "Okay..."
-    const t2 = setTimeout(() => setRevealPhase(2), 1200);  // "Here's what we found"
-    const t3 = setTimeout(() => setRevealPhase(3), 2200);  // Content fades in
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    const t1 = setTimeout(() => setRevealPhase(1), 400);    // "Okay..."
+    const t2 = setTimeout(() => setRevealPhase(2), 1600);   // Big centered headline
+    const t3 = setTimeout(() => setRevealPhase(3), 3200);   // Headline shrinks & slides up
+    const t4 = setTimeout(() => setRevealPhase(4), 4200);   // Content fades in
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
   }, []);
 
   const handleContinue = useCallback(() => {
