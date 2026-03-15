@@ -82,13 +82,12 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
     }
   }, []);
 
-  // Dramatic reveal sequence
+  // Simplified 3-phase reveal: 1=Okay, 2=headline+card, 3=card content
   useEffect(() => {
     const t1 = setTimeout(() => setRevealPhase(1), 400);
-    const t2 = setTimeout(() => setRevealPhase(2), 1600);
-    const t3 = setTimeout(() => setRevealPhase(3), 3600);
-    const t4 = setTimeout(() => setRevealPhase(4), 4600);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
+    const t2 = setTimeout(() => setRevealPhase(2), 1800);
+    const t3 = setTimeout(() => setRevealPhase(3), 3000);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, []);
 
   const handleContinue = useCallback(() => {
@@ -123,9 +122,9 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
         transition={{ duration: 0.4 }}
       >
         <div className="w-full max-w-[560px] flex flex-col items-center relative">
-          {/* Phase 1: "Okay..." */}
-          <AnimatePresence>
-            {revealPhase >= 1 && revealPhase < 2 && (
+          <AnimatePresence mode="wait">
+            {/* Phase 1: "Okay..." */}
+            {revealPhase === 1 && (
               <motion.p
                 key="okay"
                 initial={{ opacity: 0 }}
@@ -137,31 +136,14 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
                 Okay...
               </motion.p>
             )}
-          </AnimatePresence>
 
-          {/* Phase 2: "Here's what we found" centered, no background */}
-          <AnimatePresence>
-            {revealPhase >= 2 && revealPhase < 3 && (
-              <motion.h2
-                key="headline"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 1.2 }}
-                className="text-3xl md:text-4xl font-bold text-foreground text-center"
-              >
-                Here's what we found
-              </motion.h2>
-            )}
-          </AnimatePresence>
-
-          {/* Phase 3+: Main card */}
-          <AnimatePresence>
-            {revealPhase >= 3 && (
+            {/* Phase 2+: Card with headline, content fades in at phase 3 */}
+            {revealPhase >= 2 && (
               <motion.div
+                key="card"
                 className="w-full bg-card border border-border rounded-[20px] p-8 md:p-10"
-                initial={{ scale: 0.92, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
               >
                 <div className="flex flex-col gap-6">
@@ -172,21 +154,21 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
                     </h2>
                   </div>
 
-                  {/* Content fades in at phase 4 */}
+                  {/* Content fades in at phase 3 */}
                   <AnimatePresence>
-                    {revealPhase >= 4 && (
+                    {revealPhase >= 3 && (
                       <motion.div
                         className="flex flex-col gap-6"
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 0.1, ease: [0.23, 1, 0.32, 1] }}
+                        transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
                       >
                         {/* Summary sentence card */}
                         <div className="bg-background border border-border rounded-xl p-6 text-center">
                           <p className="text-base md:text-lg text-foreground leading-relaxed">
                             You want a <span className="font-bold text-primary">{brief.overall_energy}</span> vibe and your video looks like a <span className="font-bold text-primary">{detectedTheme}</span>.
                           </p>
-                          <p className="text-sm text-primary/70 italic mt-3 font-display font-normal">
+                          <p className="text-sm text-primary/70 italic mt-3 font-normal">
                             "{vibeDescription}"
                           </p>
                         </div>
