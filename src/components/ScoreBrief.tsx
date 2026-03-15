@@ -133,7 +133,6 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
    const infoRows = [
      { label: "Detected Theme", value: detectedTheme },
      { label: "Dominant Visual", value: dominantVisual },
-     { label: "Suggested Music Style", value: suggestedStyle },
    ];
 
   const cards = [
