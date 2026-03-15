@@ -12,24 +12,6 @@ interface Props {
   onBack: () => void;
 }
 
-function AnimatedNumber({ target, duration = 1.5 }: { target: number; duration?: number }) {
-  const [value, setValue] = useState(0);
-
-  useEffect(() => {
-    const start = performance.now();
-    const tick = (now: number) => {
-      const elapsed = (now - start) / 1000;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(Math.round(target * eased));
-      if (progress < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  }, [target, duration]);
-
-  return <>{value}</>;
-}
-
 const ENERGY_EMOJI: Record<string, string> = {
   "High Energy": "⚡", "Chill": "😌", "Emotional": "🥹", "Cinematic": "🎬",
   "Playful": "😄", "Mysterious": "🌙", "Romantic": "🌹", "Rebellious": "🔥",
@@ -68,24 +50,20 @@ function getDetectedTheme(brief: CreativeBriefData): string {
   return "Creative project";
 }
 
-function getSuggestedStyle(brief: CreativeBriefData): string {
-  const style = brief.music_style_direction;
-  const energy = brief.overall_energy.toLowerCase();
-  if (style === "Hip Hop" && ["chill", "emotional"].includes(energy)) return "Lo-fi hip hop";
-  if (style === "Hip Hop") return "Boom-bap hip hop";
-  if (style === "Cinematic" && energy === "emotional") return "Orchestral strings";
-  if (style === "Cinematic") return "Epic cinematic";
-  if (style === "Lo-Fi") return "Lo-fi beats";
-  if (style === "Electronic" && energy === "chill") return "Downtempo electronic";
-  if (style === "Electronic") return "Synth-driven electronic";
-  return `${energy} ${style.toLowerCase()}`;
-}
-
 export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue, onReanalyse, onBack }: Props) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [flashOut, setFlashOut] = useState(false);
   const [editing, setEditing] = useState<EditingField>(null);
   const [editReferences, setEditReferences] = useState(brief.references_text ?? "");
+  const [revealPhase, setRevealPhase] = useState(0); // 0=nothing, 1=okay, 2=header, 3=content
+
+  // Dramatic reveal sequence
+  useEffect(() => {
+    const t1 = setTimeout(() => setRevealPhase(1), 300);   // "Okay..."
+    const t2 = setTimeout(() => setRevealPhase(2), 1200);  // "Here's what we found"
+    const t3 = setTimeout(() => setRevealPhase(3), 2200);  // Content fades in
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, []);
 
   const handleContinue = useCallback(() => {
     setFlashOut(true);
@@ -116,28 +94,17 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
     onReanalyse();
   }, [onReanalyse]);
 
-  const stagger = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.12, delayChildren: 0.3 } },
-  };
+  const detectedTheme = getDetectedTheme(brief);
+  const dominantVisual = "Speaker, warm lighting";
 
-  const fadeUp = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } },
-  };
-
-   const detectedTheme = getDetectedTheme(brief);
-   const suggestedStyle = getSuggestedStyle(brief);
-   const dominantVisual = "Speaker, warm lighting";
-
-   const infoRows = [
-     { label: "Detected Theme", value: detectedTheme },
-     { label: "Dominant Visual", value: dominantVisual },
-   ];
+  const infoRows = [
+    { label: "Detected Theme", value: detectedTheme },
+    { label: "Dominant Visual", value: dominantVisual },
+  ];
 
   const cards = [
     { icon: ENERGY_EMOJI[brief.overall_energy] || "⚡", value: brief.overall_energy, label: "Your energy", field: "energy" as EditingField },
-    { icon: "🎵", value: brief.music_style_direction, label: "Your style", field: "style" as EditingField },
+    { icon: "🎵", value: brief.music_style_direction || "Not set", label: "Your style", field: "style" as EditingField },
     { icon: "✨", value: brief.references_text?.trim() || "—", label: "Inspiration", field: "references" as EditingField },
   ];
 
@@ -162,104 +129,183 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
         animate={{ opacity: flashOut ? 0 : 1 }}
         transition={{ duration: 0.4 }}
       >
-        {/* Back button */}
-        <div className="w-full max-w-[640px] mb-4">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Back
-          </button>
-        </div>
-
-        <motion.div
-          className="w-full max-w-[640px] bg-card border border-border rounded-[20px] p-8 md:p-10"
-          initial={{ scale: 0.92, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-        >
-          <motion.div variants={stagger} initial="hidden" animate="show" className="flex flex-col gap-8">
-            {/* Header */}
-            <motion.div variants={fadeUp} className="text-center">
-              <p className="text-[0.7rem] font-mono uppercase tracking-[0.2em] text-primary mb-2">
-                Based on your video
-              </p>
-            </motion.div>
-
-            {/* Detected info rows */}
-            <motion.div variants={fadeUp} className="flex flex-col gap-3">
-              {infoRows.map((row) => (
-                <div key={row.label} className="flex items-center justify-between px-4 py-3 bg-background border border-border rounded-xl">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider">{row.label}</span>
-                  <span className="text-sm font-semibold text-foreground">{row.value}</span>
-                </div>
-              ))}
-            </motion.div>
-
-            {/* Selection cards */}
-            <motion.div variants={fadeUp} className="grid grid-cols-3 gap-3">
-              {cards.map((card) => (
-                <motion.div
-                  key={card.label}
-                  className="relative bg-background border border-border rounded-xl p-4 flex flex-col items-center gap-2 group cursor-pointer"
-                  whileHover={{ y: -4 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  onClick={() => openEdit(card.field)}
-                >
-                  <span className="text-2xl">{card.icon}</span>
-                  <span className="text-sm font-semibold text-foreground text-center truncate w-full">{card.value}</span>
-                  <span className="text-[0.65rem] text-muted-foreground uppercase tracking-wider">{card.label}</span>
-                  <span className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 text-muted-foreground">
-                    <Pencil className="w-3 h-3" />
-                  </span>
-                </motion.div>
-              ))}
-            </motion.div>
-
-            {/* Actions */}
-            <motion.div variants={fadeUp} className="flex flex-col items-center gap-3">
+        {/* Back button — only show after reveal */}
+        <AnimatePresence>
+          {revealPhase >= 3 && (
+            <motion.div
+              className="w-full max-w-[640px] mb-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
               <button
-                onClick={handleContinue}
-                className="w-full py-3.5 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+                onClick={onBack}
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                Take me to my video →
+                <ChevronLeft className="w-4 h-4" />
+                Back
               </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-              <AnimatePresence mode="wait">
-                {showConfirm ? (
+        {/* Reveal sequence */}
+        <div className="w-full max-w-[640px] flex flex-col items-center">
+          {/* Phase 1: "Okay..." */}
+          <AnimatePresence>
+            {revealPhase >= 1 && revealPhase < 3 && (
+              <motion.p
+                key="okay"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: revealPhase === 1 ? 1 : 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.6 }}
+                className="text-lg text-muted-foreground font-medium mb-4"
+              >
+                Okay...
+              </motion.p>
+            )}
+          </AnimatePresence>
+
+          {/* Phase 2: "Here's what we found" */}
+          <AnimatePresence>
+            {revealPhase >= 2 && revealPhase < 3 && (
+              <motion.h2
+                key="headline"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.6 }}
+                className="text-2xl font-bold text-foreground"
+              >
+                Here's what we found
+              </motion.h2>
+            )}
+          </AnimatePresence>
+
+          {/* Phase 3: Full content card */}
+          <AnimatePresence>
+            {revealPhase >= 3 && (
+              <motion.div
+                className="w-full bg-card border border-border rounded-[20px] p-8 md:p-10"
+                initial={{ scale: 0.92, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
+              >
+                <div className="flex flex-col gap-8">
+                  {/* Header */}
                   <motion.div
-                    key="confirm"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="text-center flex flex-col items-center gap-2"
+                    className="text-center"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
                   >
-                    <p className="text-xs text-muted-foreground">This will reset your selections. Continue?</p>
-                    <div className="flex gap-4">
-                      <button onClick={confirmReanalyse} className="text-xs text-primary hover:underline">
-                        Yes, start fresh
-                      </button>
-                      <button onClick={() => setShowConfirm(false)} className="text-xs text-muted-foreground hover:text-foreground">
-                        Cancel
-                      </button>
-                    </div>
+                    <p className="text-[0.7rem] font-mono uppercase tracking-[0.2em] text-primary">
+                      Here's what we found
+                    </p>
                   </motion.div>
-                ) : (
-                  <motion.button
-                    key="link"
+
+                  {/* Detected info rows */}
+                  <motion.div
+                    className="flex flex-col gap-3"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.4 }}
+                  >
+                    {infoRows.map((row) => (
+                      <div key={row.label} className="flex items-center justify-between px-4 py-3 bg-background border border-border rounded-xl">
+                        <span className="text-xs text-muted-foreground uppercase tracking-wider">{row.label}</span>
+                        <span className="text-sm font-semibold text-foreground">{row.value}</span>
+                      </div>
+                    ))}
+                  </motion.div>
+
+                  {/* "You're leaning towards" divider */}
+                  <motion.div
+                    className="text-center"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    onClick={() => setShowConfirm(true)}
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    transition={{ duration: 0.6, delay: 0.6 }}
                   >
-                    Not quite right? Start over
-                  </motion.button>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          </motion.div>
-        </motion.div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">You're leaning towards</p>
+                  </motion.div>
+
+                  {/* Selection cards */}
+                  <motion.div
+                    className="grid grid-cols-3 gap-3"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.7 }}
+                  >
+                    {cards.map((card) => (
+                      <motion.div
+                        key={card.label}
+                        className="relative bg-background border border-border rounded-xl p-4 flex flex-col items-center gap-2 group cursor-pointer"
+                        whileHover={{ y: -4 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        onClick={() => openEdit(card.field)}
+                      >
+                        <span className="text-2xl">{card.icon}</span>
+                        <span className="text-sm font-semibold text-foreground text-center truncate w-full">{card.value}</span>
+                        <span className="text-[0.65rem] text-muted-foreground uppercase tracking-wider">{card.label}</span>
+                        <span className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 text-muted-foreground">
+                          <Pencil className="w-3 h-3" />
+                        </span>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+
+                  {/* Actions */}
+                  <motion.div
+                    className="flex flex-col items-center gap-3"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 0.9 }}
+                  >
+                    <button
+                      onClick={handleContinue}
+                      className="w-full py-3.5 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+                    >
+                      Take me to my video →
+                    </button>
+
+                    <AnimatePresence mode="wait">
+                      {showConfirm ? (
+                        <motion.div
+                          key="confirm"
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="text-center flex flex-col items-center gap-2"
+                        >
+                          <p className="text-xs text-muted-foreground">This will reset your selections. Continue?</p>
+                          <div className="flex gap-4">
+                            <button onClick={confirmReanalyse} className="text-xs text-primary hover:underline">
+                              Yes, start fresh
+                            </button>
+                            <button onClick={() => setShowConfirm(false)} className="text-xs text-muted-foreground hover:text-foreground">
+                              Cancel
+                            </button>
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <motion.button
+                          key="link"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          onClick={() => setShowConfirm(true)}
+                          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          Not quite right? Start over
+                        </motion.button>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </motion.div>
 
       {/* Edit Overlay */}
@@ -272,7 +318,6 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            {/* Backdrop */}
             <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setEditing(null)} />
 
             <motion.div
