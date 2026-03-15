@@ -252,45 +252,48 @@ export default function ScoreBrief({ brief, clipCount, onBriefChange, onContinue
 
                         {/* Actions */}
                         <div className="flex flex-col items-center gap-3">
-                    <button
-                      onClick={handleContinue}
-                      className="w-full py-3.5 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
-                    >
-                      Take me to my video →
-                    </button>
+                          <button
+                            onClick={handleContinue}
+                            className="w-full py-3.5 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+                          >
+                            Take me to my video →
+                          </button>
 
-                    <AnimatePresence mode="wait">
-                      {showConfirm ? (
-                        <motion.div
-                          key="confirm"
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="text-center flex flex-col items-center gap-2"
-                        >
-                          <p className="text-xs text-muted-foreground">This will reset your selections. Continue?</p>
-                          <div className="flex gap-4">
-                            <button onClick={confirmReanalyse} className="text-xs text-primary hover:underline">
-                              Yes, start fresh
-                            </button>
-                            <button onClick={() => setShowConfirm(false)} className="text-xs text-muted-foreground hover:text-foreground">
-                              Cancel
-                            </button>
-                          </div>
-                        </motion.div>
-                      ) : (
-                        <motion.button
-                          key="link"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          onClick={() => setShowConfirm(true)}
-                          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          Not quite right? Start over
-                        </motion.button>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
+                          <AnimatePresence mode="wait">
+                            {showConfirm ? (
+                              <motion.div
+                                key="confirm"
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="text-center flex flex-col items-center gap-2"
+                              >
+                                <p className="text-xs text-muted-foreground">This will reset your selections. Continue?</p>
+                                <div className="flex gap-4">
+                                  <button onClick={confirmReanalyse} className="text-xs text-primary hover:underline">
+                                    Yes, start fresh
+                                  </button>
+                                  <button onClick={() => setShowConfirm(false)} className="text-xs text-muted-foreground hover:text-foreground">
+                                    Cancel
+                                  </button>
+                                </div>
+                              </motion.div>
+                            ) : (
+                              <motion.button
+                                key="link"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                onClick={() => setShowConfirm(true)}
+                                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                              >
+                                Not quite right? Start over
+                              </motion.button>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </motion.div>
             )}
