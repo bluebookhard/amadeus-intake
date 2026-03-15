@@ -40,10 +40,6 @@ export default function CreativeBrief({ onComplete, onBack, initialStep, initial
   const [selectedEnergy, setSelectedEnergy] = useState<string | null>(initialData?.overall_energy ?? null);
   const [selectedMusic, setSelectedMusic] = useState<string | null>(initialData?.music_style_direction ?? null);
   const [references, setReferences] = useState(initialData?.references_text ?? "");
-  const [step, setStep] = useState<Step>(0);
-  const [selectedEnergy, setSelectedEnergy] = useState<string | null>(null);
-  const [selectedMusic, setSelectedMusic] = useState<string | null>(null);
-  const [references, setReferences] = useState("");
   const [showResponse, setShowResponse] = useState(false);
   const [responseLine, setResponseLine] = useState("");
   const [confirmedAnswers, setConfirmedAnswers] = useState<{ label: string; emoji: string }[]>([]);
